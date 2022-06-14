@@ -1,0 +1,24 @@
+name: build and upload container
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run build
+        run: docker build -t ${{ github.event.repository.name }} .
+      
+      - name: Log into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Tag Image
+        run: docker tag ${{ github.event.repository.name }}:latest docker.pkg.github.com/boredhackerblog/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+
+      - name: Push Image
+        run: docker push docker.pkg.github.com/boredhackerblog/${{ github.event.repository.name }}/${{ github.event.repository.name }}
